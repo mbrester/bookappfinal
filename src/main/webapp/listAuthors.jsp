@@ -34,12 +34,12 @@
                     <tr style="background-color: #ccffff;">
                 </c:otherwise>
             </c:choose>
-            <td align="left">${a.authorID}</td>
+            <td align="left">${a.authorId}</td>
             <td align="left">${a.authorName}</td>
             <td align="right">
                 <fmt:formatDate pattern="M/d/yyyy" value="${a.dateAdded}"></fmt:formatDate>
             </td>
-            <td align ="right"> <a href="AuthorController?action=edit&authorID=${a.authorID}"> edit </a> <a href="AuthorController?action=delete&authorID=${a.authorID}"> delete </a> 
+            <td align ="right"> <a href="AuthorController?action=edit&authorID=${a.authorId}"> edit </a> <a href="AuthorController?action=delete&authorID=${a.authorId}"> delete </a> 
         </tr>
         </c:forEach>
         </table>

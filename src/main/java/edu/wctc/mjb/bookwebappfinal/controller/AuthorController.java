@@ -1,16 +1,15 @@
 package edu.wctc.mjb.bookwebappfinal.controller;
 
 
-import edu.wctc.mjb.bookwebappfinal.model.Author;
-import edu.wctc.mjb.bookwebappfinal.model.AuthorDaoStrategy;
-import edu.wctc.mjb.bookwebappfinal.model.AuthorService;
-import edu.wctc.mjb.bookwebappfinal.model.DbStrategy;
-import edu.wctc.mjb.bookwebappfinal.model.MySqlDbStrategy;
+
+import edu.wctc.mjb.bookwebappfinal.entity.Author;
+import edu.wctc.mjb.bookwebappfinal.service.AbstractFacade;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.servlet.RequestDispatcher;
@@ -43,15 +42,10 @@ public class AuthorController extends HttpServlet {
     private static final String UPDATE_ACTION = "update";
     private static final String DELETE_ACTION = "delete";
     private static final String NEW_ACTION = "new";
-
-    private String driverClass;
-    private String url;
-    private String userName;
-    private String password;
-    private String dbStrategyClassName;
-    private String daoClassName;
-    private DbStrategy db;
-    private AuthorDaoStrategy authorDao;
+    
+    @Inject
+    private AbstractFacade<Author> authService;
+  
     
     
     /**
@@ -69,10 +63,11 @@ public class AuthorController extends HttpServlet {
 
         String destination = LIST_PAGE;
         String action = request.getParameter(ACTION_PARAM);
-
+        Author author = null;
+        String authID = null;
         try {
             
-            AuthorService authService = injectDependenciesAndGetAuthorService();
+           
 
             //In this version of the project we only have the findAuthors working, but I will mirge other parts later
             switch (action) {
@@ -81,16 +76,18 @@ public class AuthorController extends HttpServlet {
                     destination = LIST_PAGE;
                     break;
                 case UPDATE_ACTION:
+                        authID = request.getParameter("authorId");
+                       author = authService.find(Integer.parseInt(authID));
+                       author.setAuthorName(request.getParameter("authorName"));
+                        authService.edit(author);
                        
-                        
-                       authService.updateRecord(request.getParameter("authorName"), Integer.parseInt(request.getParameter("authorId")));
                     this.refreshList(request, authService);
                     destination = LIST_PAGE;
                     break;
                 case EDIT_ACTION:
-                    String authID = request.getParameter("authorID");
-                   Author a = authService.getAuthorById(authID);
-                    request.setAttribute("author", a);
+                    authID = request.getParameter("authorID");
+                   author = authService.find(Integer.parseInt(authID));
+                    request.setAttribute("author", author);
                     destination = EDIT_PAGE;
                     break;
                    
@@ -98,14 +95,17 @@ public class AuthorController extends HttpServlet {
                     destination = ADD_PAGE;
                     break;
                 case NEW_ACTION:
-                    authService.createNewAuthoer(request.getParameter("authorName"));
+                    author = new Author(0);
+                    author.setAuthorName(request.getParameter("authorName"));
+                    authService.create(author);
                     
                     this.refreshList(request, authService);
                     destination = LIST_PAGE;
                      break;
                     
                 case DELETE_ACTION:
-                    authService.deleteRecordByID(Integer.parseInt(request.getParameter("authorID")));
+                    author = authService.find(Integer.parseInt(request.getParameter("authorID")));
+                    authService.remove(author);
                     this.refreshList(request, authService);
                     destination = LIST_PAGE;
                     break;
@@ -123,59 +123,14 @@ public class AuthorController extends HttpServlet {
         dispatcher.forward(request, response);
     }
   
-  //I used the Same name as Jim, could not think of a better name.
-  private AuthorService injectDependenciesAndGetAuthorService() throws Exception {
-
-        Class dbClass = Class.forName(dbStrategyClassName);
-        DbStrategy db = (DbStrategy) dbClass.newInstance();
-
-        AuthorDaoStrategy authorDao = null;
-        Class daoClass = Class.forName(daoClassName);
-        Constructor constructor = null;
-        try{
-        constructor = daoClass.getConstructor(new Class[]{
-            DbStrategy.class, String.class, String.class, String.class, String.class
-        });
-        }catch(NoSuchMethodException e){
-            
-        }
-        if (constructor != null) {
-            Object[] constructorArgs = new Object[]{
-                db, driverClass, url, userName, password
-            };
-            authorDao = (AuthorDaoStrategy) constructor
-                    .newInstance(constructorArgs);
-
-        } else{
-            Context ctx = new InitialContext();
-        
-            DataSource ds = (DataSource) ctx.lookup("jdbc/book");
-            constructor = daoClass.getConstructor(new Class[]{
-                DataSource.class, DbStrategy.class
-            });
-            Object[] constructorArgs = new Object[]{
-                ds, db
-            };
-
-            authorDao = (AuthorDaoStrategy) constructor
-                    .newInstance(constructorArgs);
-        }
-        return new AuthorService(authorDao);
-    }
-
-    
-    private void refreshList(HttpServletRequest request, AuthorService authService) throws Exception {
-        List<Author> authors = authService.getAllAuthors();
+ 
+    private void refreshList(HttpServletRequest request, AbstractFacade<Author> authService) throws Exception {
+        List<Author> authors = authService.findAll();
         request.setAttribute("authors", authors);
     }
      @Override
     public void init() throws ServletException {
-        driverClass = getServletConfig().getInitParameter("driverClass");
-        url = getServletConfig().getInitParameter("url");
-        userName = getServletConfig().getInitParameter("userName");
-        password = getServletConfig().getInitParameter("password");
-        dbStrategyClassName = this.getServletConfig().getInitParameter("dbStrategy");
-        daoClassName = this.getServletConfig().getInitParameter("authorDao");
+       
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

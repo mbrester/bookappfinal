@@ -20,7 +20,7 @@
                     
                         <tr>
                             <td style="background-color: black;color:white;" align="left">ID</td>
-                            <td align="left"><input type="text" value="${author.authorID}" name="authorId" readonly/></td>
+                            <td align="left"><input type="text" value="${author.authorId}" name="authorId" readonly/></td>
                         </tr>         
                     
                 
