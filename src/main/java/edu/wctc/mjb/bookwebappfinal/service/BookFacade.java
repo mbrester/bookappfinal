@@ -5,19 +5,17 @@
  */
 package edu.wctc.mjb.bookwebappfinal.service;
 
-import edu.wctc.mjb.bookwebappfinal.entity.Author;
-import java.util.List;
+import edu.wctc.mjb.bookwebappfinal.entity.Book;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 /**
  *
  * @author Brester
  */
 @Stateless
-public class AuthorFacade extends AbstractFacade<Author> {
+public class BookFacade extends AbstractFacade<Book> {
     @PersistenceContext(unitName = "book_PU")
     private EntityManager em;
 
@@ -26,18 +24,8 @@ public class AuthorFacade extends AbstractFacade<Author> {
         return em;
     }
 
-    public AuthorFacade() {
-        super(Author.class);
+    public BookFacade() {
+        super(Book.class);
     }
-    
-    public List<Author> findByName(String name){
-        String jpql = "select a from Authoer where a.authorName = ?1";
-        Query q = getEntityManager().createQuery(jpql);
-        q.setParameter(1, name);
-        
-        return q.getResultList();
-    }
-
-    
     
 }
