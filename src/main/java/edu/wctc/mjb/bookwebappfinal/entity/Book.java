@@ -7,6 +7,7 @@ package edu.wctc.mjb.bookwebappfinal.entity;
 
 import java.io.Serializable;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -45,7 +46,7 @@ public class Book implements Serializable {
     @Size(max = 45)
     @Column(name = "isbn")
     private String isbn;
-    @JoinColumn(name = "author_id", referencedColumnName = "author_id")
+    @JoinColumn(name = "author_id", referencedColumnName = "author_id" )
     @ManyToOne
     private Author authorId;
 

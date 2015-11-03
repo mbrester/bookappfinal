@@ -4,7 +4,7 @@ package edu.wctc.mjb.bookwebappfinal.controller;
 
 import edu.wctc.mjb.bookwebappfinal.entity.Author;
 import edu.wctc.mjb.bookwebappfinal.entity.Book;
-import edu.wctc.mjb.bookwebappfinal.service.AbstractFacade;
+import edu.wctc.mjb.bookwebappfinal.service.AuthorService;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -14,12 +14,15 @@ import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * The main controller for author-related activities
@@ -44,8 +47,7 @@ public class AuthorController extends HttpServlet {
     private static final String DELETE_ACTION = "delete";
     private static final String NEW_ACTION = "new";
     
-    @Inject
-    private AbstractFacade<Author> authService;
+   
     
   
     
@@ -67,6 +69,14 @@ public class AuthorController extends HttpServlet {
         String action = request.getParameter(ACTION_PARAM);
         Author author = null;
         String authID = null;
+        
+        
+        
+         ServletContext sctx = getServletContext();
+        WebApplicationContext ctx
+                = WebApplicationContextUtils.getWebApplicationContext(sctx);
+        AuthorService authService = (AuthorService) ctx.getBean("authorService");
+        
         try {
             
            
@@ -79,7 +89,7 @@ public class AuthorController extends HttpServlet {
                     break;
                 case UPDATE_ACTION:
                         authID = request.getParameter("authorId");
-                       author = authService.find(Integer.parseInt(authID));
+                       author = authService.findById(authID);
                        author.setAuthorName(request.getParameter("authorName"));
                         authService.edit(author);
                        
@@ -88,7 +98,7 @@ public class AuthorController extends HttpServlet {
                     break;
                 case EDIT_ACTION:
                     authID = request.getParameter("authorID");
-                   author = authService.find(Integer.parseInt(authID));
+                   author = authService.findById(authID);
                     request.setAttribute("author", author);
                     destination = EDIT_PAGE;
                     break;
@@ -99,14 +109,14 @@ public class AuthorController extends HttpServlet {
                 case NEW_ACTION:
                     author = new Author(0);
                     author.setAuthorName(request.getParameter("authorName"));
-                    authService.create(author);
+                    authService.edit(author);
                     
                     this.refreshList(request, authService);
                     destination = LIST_PAGE;
                      break;
                     
                 case DELETE_ACTION:
-                    author = authService.find(Integer.parseInt(request.getParameter("authorID")));
+                    author = authService.findById(request.getParameter("authorID"));
                     authService.remove(author);
                     this.refreshList(request, authService);
                     destination = LIST_PAGE;
@@ -126,7 +136,7 @@ public class AuthorController extends HttpServlet {
     }
   
  
-    private void refreshList(HttpServletRequest request, AbstractFacade<Author> authService) throws Exception {
+    private void refreshList(HttpServletRequest request,  AuthorService authService) throws Exception {
         List<Author> authors = authService.findAll();
         request.setAttribute("authors", authors);
     }
