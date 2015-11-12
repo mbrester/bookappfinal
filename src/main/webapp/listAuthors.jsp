@@ -39,19 +39,30 @@
             <td align="right">
                 <fmt:formatDate pattern="M/d/yyyy" value="${a.dateAdded}"></fmt:formatDate>
             </td>
-            <td align ="right"> <a href="AuthorController?action=edit&authorID=${a.authorId}"> edit </a> <a href="AuthorController?action=delete&authorID=${a.authorId}"> delete </a> 
+            <td align ="right">
+                    <sec:authorize access="hasAnyRole('ROLE_MGR')">
+             <a href="AuthorController?action=edit&authorID=${a.authorId}"> edit </a> <a href="AuthorController?action=delete&authorID=${a.authorId}"> delete </a> 
+                    </sec:authorize>
         </tr>
         </c:forEach>
         </table>
         
         <form method="POST" action="AuthorController?action=add">
+            <sec:authorize access="hasAnyRole('ROLE_MGR')">
             <input type="submit" value="Add"/>
+            </sec:authorize>
         </form>
         
             
+        <p>Click here to go back to Home Page <a href="index.html">Home</a></p>
+
         <c:if test="${errMsg != null}">
             <p style="font-weight: bold;color: red;width:500px;">Sorry, data could not be retrieved:<br>
                 ${errMsg}</p>
         </c:if>
+        <sec:authorize access="hasAnyRole('ROLE_MGR','ROLE_USER')">
+            Logged in as: <sec:authentication property="principal.authority"></sec:authentication> ::
+            <a href='<%= this.getServletContext().getContextPath() + "/j_spring_security_logout"%>'>Log Me Out</a>
+        </sec:authorize>
     </body>
 </html>
