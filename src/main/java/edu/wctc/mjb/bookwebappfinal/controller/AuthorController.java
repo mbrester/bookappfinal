@@ -3,27 +3,22 @@ package edu.wctc.mjb.bookwebappfinal.controller;
 
 
 import edu.wctc.mjb.bookwebappfinal.entity.Author;
-import edu.wctc.mjb.bookwebappfinal.entity.Book;
 import edu.wctc.mjb.bookwebappfinal.service.AuthorService;
+import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
+import java.io.PrintWriter;
 import java.util.List;
-import java.util.Map;
-import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
 /**
  * The main controller for author-related activities
  *
@@ -46,6 +41,7 @@ public class AuthorController extends HttpServlet {
     private static final String UPDATE_ACTION = "update";
     private static final String DELETE_ACTION = "delete";
     private static final String NEW_ACTION = "new";
+    private static final String AJAX_LIST_ACTION = "listAjax";
     
    
     
@@ -76,6 +72,7 @@ public class AuthorController extends HttpServlet {
         WebApplicationContext ctx
                 = WebApplicationContextUtils.getWebApplicationContext(sctx);
         AuthorService authService = (AuthorService) ctx.getBean("authorService");
+        PrintWriter out = response.getWriter();
         
         try {
             
@@ -96,6 +93,24 @@ public class AuthorController extends HttpServlet {
                     this.refreshList(request, authService);
                     destination = LIST_PAGE;
                     break;
+                case AJAX_LIST_ACTION:
+                    List<Author> authors = authService.findAll();
+                    JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+                    authors.forEach((authorObj) -> {
+                        jsonArrayBuilder.add(
+                                Json.createObjectBuilder()
+                                .add("authorId", authorObj.getAuthorId())
+                                .add("authorName", authorObj.getAuthorName())
+                                .add("dateAdded", authorObj.getDateAdded().toString())
+                        );
+                    });
+
+                    JsonArray authorsJson = jsonArrayBuilder.build();
+                    response.setContentType("application/json");
+                    out.write(authorsJson.toString());
+                    out.flush();
+                    return;
                 case EDIT_ACTION:
                     authID = request.getParameter("authorID");
                    author = authService.findById(authID);
