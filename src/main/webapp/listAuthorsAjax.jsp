@@ -35,14 +35,11 @@
             
         <p>Click here to go back to Home Page <a href="index.html">Home</a></p>
 
-       
-        <sec:authorize access="hasAnyRole('ROLE_MGR','ROLE_USER')">
-            Logged in as: <sec:authentication property="principal.authority"></sec:authentication> ::
-            <a href='<%= this.getServletContext().getContextPath() + "/j_spring_security_logout"%>'>Log Me Out</a>
-        </sec:authorize>
+
     
     
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" type="text/javascript"></script>
-        <script src="/MainJs.js" type="text/javascript"></script>
+        <script src="mainJs.js" type="text/javascript"></script>
     </body>
 </html>
+
